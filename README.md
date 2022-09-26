@@ -10,11 +10,11 @@ Tasks:
     b. test -- PASSED
     c. mvn verify -- PASSED
     d. run on developer machine for the purpose of hands-on testing -- NO POSSIBILITY/NO REASON TO DO THAT --> PASSED
-4. Follow the case of master branch:
-    a. compile
-    b. test
-    c. mvn deploy
-    d. publish as SNAPSHOT in JFrog artifactory
+4. Follow the case of master branch: -- PASSED
+    a. compile -- PASSED
+    b. test -- PASSED
+    c. mvn deploy -- PASSED
+    d. publish as SNAPSHOT in JFrog artifactory -- PASSED
 5. Follow the case of release branch:
     a. Calculate the correct version based on branch and latest used tag
     b. compile

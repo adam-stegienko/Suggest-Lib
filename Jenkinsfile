@@ -102,6 +102,26 @@ pipeline {
                     sh "mvn clean verify"
                 }
             }
+            post {
+                success {
+                    archiveArtifacts 'target/*.jar'
+                }
+            }
+        }
+        stage('Master branch publishing as SNAPSHOT') {
+            when {
+                anyOf {
+                    branch "master"
+                }
+            }
+            steps {
+                script {
+                    configFileProvider([configFile(fileId: 'fc3e184d-fd76-4262-a1e7-9a5671ebd340', variable: 'MAVEN_SETTINGS_XML')]) {
+                        sh "mvn  -Dmaven.test.failure.ignore=true -DskipTests -s $MAVEN_SETTINGS_XML deploy"
+                    }
+                    echo 'SNAPSHOT version has been published in artifactory.'
+                }
+            }
         }
     }
 }
