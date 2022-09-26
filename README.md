@@ -2,8 +2,9 @@
 
 Tasks:
 
-1. Add a developer machine to your lab docker compose topology
-2. Create a multibranch pipeline.
+0. Config your Jenkins, GitLab, and JFrog envs for suggest-lib and push source code to GitLab. -- JFrog OK // push source code OK // Jenkins OK // GitLab OK
+1. Add a developer machine to your lab docker compose topology -- PASSED
+2. Create a multibranch pipeline. -- PASSED
 3. Follow the case of non-release branch:
     a. compile
     b. test
