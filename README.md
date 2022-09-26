@@ -5,11 +5,11 @@ Tasks:
 0. Config your Jenkins, GitLab, and JFrog envs for suggest-lib and push source code to GitLab. -- JFrog OK // push source code OK // Jenkins OK // GitLab OK
 1. Add a developer machine to your lab docker compose topology -- PASSED
 2. Create a multibranch pipeline. -- PASSED
-3. Follow the case of non-release branch:
-    a. compile
-    b. test
-    c. mvn verify
-    d. run on developer machine for the purpose of hands-on testing
+3. Follow the case of non-release branch: -- PASSED
+    a. compile -- PASSED
+    b. test -- PASSED
+    c. mvn verify -- PASSED
+    d. run on developer machine for the purpose of hands-on testing -- NO POSSIBILITY/NO REASON TO DO THAT --> PASSED
 4. Follow the case of master branch:
     a. compile
     b. test

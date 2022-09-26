@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+        maven 'Maven 3.6.2'
+    }
     environment {
         GITLAB = credentials('a31843c7-9aa6-4723-95ff-87a1feb934a1')
     }
@@ -86,15 +89,19 @@ pipeline {
                 }
             }
         }
-        // stage('Non-release branch build') {
-        //     when {
-        //         anyOf {
-        //             branch "release/*"
-        //             branch "master"
-        //             branch "feature"
-        //         }
-        //     }
-        //     script {}
-        // }
+        stage('Non-release branch build') {
+            when {
+                anyOf {
+                    branch "release/*"
+                    branch "master"
+                    branch "feature"
+                }
+            }
+            steps {
+                script {
+                    sh "mvn clean verify"
+                }
+            }
+        }
     }
 }
