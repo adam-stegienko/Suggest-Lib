@@ -1,5 +1,41 @@
 # suggest-lib
 
+Tasks:
+
+1. Add a developer machine to your lab docker compose topology
+2. Create a multibranch pipeline.
+3. Follow the case of non-release branch:
+    a. compile
+    b. test
+    c. mvn verify
+    d. run on developer machine for the purpose of hands-on testing
+4. Follow the case of master branch:
+    a. compile
+    b. test
+    c. mvn deploy
+    d. publish as SNAPSHOT in JFrog artifactory
+5. Follow the case of release branch:
+    a. Calculate the correct version based on branch and latest used tag
+    b. compile
+    c. test
+    d. change version in build (mvn versions:set at mvn install stage)
+    e. mvn deploy
+    f. publish as $NEW_VERSION in JFrog artifactory
+    g. Tag the new version using git
+    h. Push the tag and the updated branch to Git repo (GitLab)
+
+
+
+
+
+
+
+
+
+
+
+
+
 TO DO OR USEFUL TIPS FOR THE TASK:
 - publishing on master should result in "SNAPSHOT" saved in artifactory
 - developer machine as additional container with maven:3.6.2-jdk-8 --> also a volume for ./m2/repository:/.m2/repository, as well as volume on working files (Whatever they are), and a volume on docker socket to trace the developer's efforts from the main instance!
