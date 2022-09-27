@@ -7,7 +7,7 @@ pipeline {
         GITLAB = credentials('a31843c7-9aa6-4723-95ff-87a1feb934a1')
     }
     stages {
-        stage('Setup parameters') {
+        stage('Parameters Set-up') {
             steps {
                 script {
                     properties([
@@ -31,7 +31,6 @@ pipeline {
             steps{
                 script {
                     BRANCH = params.Version
-                    echo "This is the branch you chose to operate on: $BRANCH"
                     sh"""
                         git checkout master
                         git remote set-url origin http://\"$GITLAB\"@ec2-3-125-51-254.eu-central-1.compute.amazonaws.com/adam/suggest-lib.git
@@ -43,7 +42,11 @@ pipeline {
                     )
                     if (BRANCH_EXISTING) {
                         echo "The $BRANCH branch is already existing."
-                        sh "git checkout $BRANCH && git pull --rebase && git fetch --tags"
+                        sh """
+                        git checkout $BRANCH
+                        git pull origin $BRANCH --rebase
+                        git fetch --tags
+                        """
                     } else {
                         echo "The $BRANCH branch is not exsiting yet and needs to be created."
                         sh"""
@@ -52,44 +55,26 @@ pipeline {
                         git remote set-url origin http://\"$GITLAB\"@ec2-3-125-51-254.eu-central-1.compute.amazonaws.com/adam/suggest-lib.git
                         git fetch --tags
                         """
-                        MINOR_VERSION = BRANCH.tokenize("/")[1]
-                        LATEST_TAG = sh(
-                            script: "git describe --tags --abbrev=0 | grep -w $BRANCH || true"
-                        )
-                        echo "This is the expected version without patch: $MINOR_VERSION"
-                        echo "This is the latest tag found that is related to given branch: $LATEST_TAG"
+                    }
+                    MINOR_VERSION = BRANCH.split("/")[1]
+                    LATEST_TAG = sh(
+                        script: "git describe --tags --abbrev=0 | grep -E '^$MINOR_VERSION' || true",
+                        returnStdout: true,
+                    )
+                    echo "This is $LATEST_TAG"
+                    if (LATEST_TAG) {
+                        NEW_PATCH = (LATEST_TAG.tokenize(".")[2].toInteger() + 1).toString()
+                    } else {
+                        NEW_PATCH = "0"
+                    }
+                    NEW_TAG = MINOR_VERSION + "." + NEW_PATCH
+                    configFileProvider([configFile(fileId: 'fc3e184d-fd76-4262-a1e7-9a5671ebd340', variable: 'MAVEN_SETTINGS_XML')]) {
+                        sh "mvn versions:set -DnewVersion=$NEW_TAG"
                     }
                 }
             }
         }
-        stage('*TEST* Release branch presentation') {
-            when { branch "release/*" }
-            steps {
-                script {
-                    BRANCH = params.Version
-                    echo "You are currently on $BRANCH branch."
-                }
-            }
-        }
-        stage('*TEST* Master branch presentation') {
-            when { branch "master" }
-            steps {
-                script {
-                    BRANCH = params.Version
-                    echo "You are currently on $BRANCH branch."
-                }
-            }
-        }
-        stage('*TEST* Feature branch presentation') {
-            when { branch "feature" }
-            steps {
-                script {
-                    BRANCH = params.Version
-                    echo "You are currently on $BRANCH branch."
-                }
-            }
-        }
-        stage('Non-release branch build') {
+        stage('Suggest-Lib Build') {
             when {
                 anyOf {
                     branch "release/*"
@@ -108,10 +93,11 @@ pipeline {
                 }
             }
         }
-        stage('Master branch publishing as SNAPSHOT') {
+        stage('Suggest-Lib Publish') {
             when {
                 anyOf {
                     branch "master"
+                    branch "release/*"
                 }
             }
             steps {
@@ -119,7 +105,21 @@ pipeline {
                     configFileProvider([configFile(fileId: 'fc3e184d-fd76-4262-a1e7-9a5671ebd340', variable: 'MAVEN_SETTINGS_XML')]) {
                         sh "mvn  -Dmaven.test.failure.ignore=true -DskipTests -s $MAVEN_SETTINGS_XML deploy"
                     }
-                    echo 'SNAPSHOT version has been published in artifactory.'
+                    echo "New artifact has been published in to artifactory."
+                }
+            }
+        }
+        stage('Tagging and Pushing to GitLab Repository') {
+            when { branch "release/*" }
+            steps {
+                script {
+                    sh"""
+                    git config --global user.email "adam.stegienko1@gmail.com"
+                    git config --global user.name "Adam Stegienko"
+                    git clean -f -x
+                    git tag -a $NEW_TAG -m \"New $NEW_TAG tag added to branch $BRANCH\"
+                    git push origin $BRANCH --tag
+                    """
                 }
             }
         }
